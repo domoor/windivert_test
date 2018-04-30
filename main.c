@@ -27,8 +27,8 @@ int main() {
 	while(TRUE) {
 		uint8_t packet[MAXBUF];
 		uint32_t packet_len;
-		WINDIVERT_ADDRESS recv_addr, send_addr;
-		if(!WinDivertRecv(handle, packet, sizeof(packet), &recv_addr, &packet_len)) {
+		WINDIVERT_ADDRESS addr;
+		if(!WinDivertRecv(handle, packet, sizeof(packet), &addr, &packet_len)) {
 			fprintf(stderr, "warning: failed to read packet\n");
 			continue;
 		}
@@ -43,7 +43,7 @@ int main() {
 			continue;
 		}
 
-		if(!WinDivertSend(handle, packet, packet_len, &send_addr, NULL)) {
+		if(!WinDivertSend(handle, packet, packet_len, &addr, NULL)) {
 			fprintf(stderr, "warning: failed to send\n");
 		}
 	}
