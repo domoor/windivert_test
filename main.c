@@ -1,5 +1,5 @@
 #include <winsock2.h>
-#include <Ws2tcpip.h>	// inet_ntop()
+#include <Ws2tcpip.h>		// inet_ntop()
 #include <windows.h>
 #include <stdio.h>		// printf()
 #include <stdint.h>		// uintN_t
@@ -10,14 +10,9 @@
 #define MAXBUF			0xFFFF
 #define IPv4			4
 #define PROTOCOL_TCP		6
+#define PORT_HTTP		80
 
 int main() {
-	typedef struct
-	{
-		WINDIVERT_IPHDR ip;
-		WINDIVERT_TCPHDR tcp;
-	} TCPPACKET, *PTCPPACKET;
-
 	uint16_t priority = 0;
 	HANDLE handle = WinDivertOpen("true", WINDIVERT_LAYER_NETWORK, priority, 0);
 	if (handle == INVALID_HANDLE_VALUE)	{
@@ -32,15 +27,18 @@ int main() {
 			fprintf(stderr, "warning: failed to read packet\n");
 			continue;
 		}
-		PTCPPACKET blocked_pkt = (TCPPACKET*)packet;
-		if(blocked_pkt->ip.Version==IPv4 && blocked_pkt->ip.Protocol==PROTOCOL_TCP &&
-			ntohs(blocked_pkt->tcp.SrcPort)==80 || ntohs(blocked_pkt->tcp.DstPort)==80) {
-			uint8_t ip_buf[INET_ADDRSTRLEN];
-			printf("\nSource IP\t: %s\n", inet_ntop(AF_INET, &blocked_pkt->ip.SrcAddr, ip_buf, INET_ADDRSTRLEN));
-			printf("Destination IP\t: %s\n", inet_ntop(AF_INET, &blocked_pkt->ip.DstAddr, ip_buf, INET_ADDRSTRLEN));
-			printf("Source Port\t: %u\n", ntohs(blocked_pkt->tcp.SrcPort));
-			printf("Destination Port: %u\n", ntohs(blocked_pkt->tcp.DstPort));
-			continue;
+
+		WINDIVERT_IPHDR *ip = (WINDIVERT_IPHDR*)packet;
+		if(ip->Version==IPv4 && ip->Protocol==PROTOCOL_TCP) {
+			WINDIVERT_TCPHDR *tcp = (WINDIVERT_TCPHDR*)(packet+(ip->HdrLength)*4);
+			if(ntohs(tcp->SrcPort)==PORT_HTTP || ntohs(tcp->DstPort)==PORT_HTTP) {
+				uint8_t ip_buf[INET_ADDRSTRLEN];
+				printf("\nSource IP\t: %s\n", inet_ntop(AF_INET, &ip->SrcAddr, ip_buf, INET_ADDRSTRLEN));
+				printf("Destination IP\t: %s\n", inet_ntop(AF_INET, &ip->DstAddr, ip_buf, INET_ADDRSTRLEN));
+				printf("Source Port\t: %u\n", ntohs(tcp->SrcPort));
+				printf("Destination Port: %u\n", ntohs(tcp->DstPort));
+				continue;
+			}
 		}
 
 		if(!WinDivertSend(handle, packet, packet_len, &addr, NULL)) {
