@@ -1,5 +1,5 @@
 #include <winsock2.h>
-#include <Ws2tcpip.h>	// inet_ntop()
+#include <Ws2tcpip.h>		// inet_ntop()
 #include <windows.h>
 #include <stdio.h>		// printf()
 #include <stdint.h>		// uintN_t
@@ -7,17 +7,17 @@
 #include <string.h>
 #include "windivert.h"
 
-#define MAXBUF			0xFFFF
-#define IPv4			4
+#define MAXBUF		0xFFFF
+#define IPv4		4
 #define PROTOCOL_TCP	6
-#define PORT_HTTP		80
+#define PORT_HTTP	80
 
-#define chk_flag		1
+#define chk_flag	1
 
 struct ipv4_hdr
 {
 	uint8_t HL  : 4,			/* header length */
-			Ver : 4;			/* version */
+		Ver : 4;			/* version */
 	uint8_t tos;				/* type of service */
 	uint16_t len;				/* total length */
 	uint16_t id;				/* identification */
@@ -25,7 +25,7 @@ struct ipv4_hdr
 	uint8_t ttl;				/* time to live */
 	uint8_t protocol;			/* protocol */
 	uint16_t chk;				/* checksum */
-	struct in_addr src, dst;	/* source and dest address */
+	struct in_addr src, dst;		/* source and dest address */
 };
 
 struct tcp_hdr
@@ -34,8 +34,8 @@ struct tcp_hdr
 	uint16_t d_port;			/* destination port */
 	uint32_t seq;				/* sequence number */
 	uint32_t ack;				/* acknowledgement number */
-	uint8_t reservation : 4,	/* (unused) */
-			off         : 4;	/* data offset */
+	uint8_t reservation : 4,		/* (unused) */
+		off         : 4;		/* data offset */
 	uint8_t  flag;				/* control flags */
 	uint16_t windows;			/* window */
 	uint16_t chk;				/* checksum */
